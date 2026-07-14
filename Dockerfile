@@ -1,10 +1,10 @@
-# Node.js 20-nin yüngül versiyası
-FROM node:20-slim
+# Node.js 22-nin yüngül versiyası (Paketlərin EBADENGINE xəbərdarlığını həll edir)
+FROM node:22-slim
 
-# Puppeteer və Chrome üçün lazımi Linux kitabxanalarını quraşdırırıq
+# Puppeteer üçün lazımi paketlər + UNZIP (Çökmənin səbəbi)
 RUN apt-get update && apt-get install -y \
     wget gnupg ca-certificates procps libxss1 libnss3 libatk-bridge2.0-0 \
-    libgtk-3-0 libgbm-dev libasound2 \
+    libgtk-3-0 libgbm-dev libasound2 unzip \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
@@ -18,7 +18,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Portu aç (NestJS standart portu 3000)
+# Portu aç
 EXPOSE 3000
 
 # Proqramı başlat

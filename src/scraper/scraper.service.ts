@@ -70,9 +70,8 @@ export class ScraperService {
     }
 
     const browser = await puppeteer.launch({
-      headless: false,
-      defaultViewport: { width: 1280, height: 1080 },
-      args: ['--lang=az-AZ,az']
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
     // totalScraped moved up
@@ -127,7 +126,7 @@ export class ScraperService {
 
       try {
         addLog('log', `[Worker] ${category.name} - Məhsulların DOM-da yaranması gözlənilir...`);
-        await page.waitForSelector(config.selectors.productCard, { timeout: 15000 });
+        await page.waitForSelector(config.selectors.productCard, { timeout: 30000 });
         addLog('log', `[Worker] ${category.name} - Məhsullar tapıldı, oxumağa başlayırıq!`);
       } catch (e) {
         addLog('warn', `[Worker] ${category.name} - 15 saniyə gözlənildi, amma məhsullar tapılmadı: ${targetUrl}`);
