@@ -10,8 +10,7 @@ export class ScraperController {
   @Post('scraper/run')
   @ApiOperation({ summary: 'Run the scraper engine manually' })
   async runScraper() {
-    await this.scraperService.websiteScrapingMain();
-    return { message: 'Scraper engine started successfully' };
+    return this.scraperService.websiteScrapingMain();
   }
 
   @Post('stop')
