@@ -7,6 +7,16 @@ import * as puppeteer from 'puppeteer';
 @Injectable()
 export class ScraperService {
   private readonly logger = new Logger(ScraperService.name);
+  private abortController: AbortController | null = null;
+
+  abortScraping() {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.logger.log('Scraping manually aborted by user.');
+      return { message: 'Scraping manually aborted by user.' };
+    }
+    return { message: 'No active scraping process found.' };
+  }
 
   constructor(
     private readonly supabaseService: SupabaseService,
@@ -14,7 +24,48 @@ export class ScraperService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async websiteScrapingMain(sourceSite: string = 'irshad.az'): Promise<any> {
+  async websiteScrapingMain(): Promise<any> {
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
+    const supabase = this.supabaseService.getClient();
+
+    this.logger.log('Fetching active scraping configurations from Supabase...');
+    const { data: configs, error: configError } = await supabase
+      .from('scraping_configs')
+      .select('source_site')
+      .eq('is_active', true);
+
+    if (configError || !configs || configs.length === 0) {
+      this.logger.warn('No active configurations found.');
+      this.abortController = null;
+      return { message: 'No active configurations found.' };
+    }
+
+    this.logger.log(
+      `Found ${configs.length} active configuration(s). Starting loop...`,
+    );
+    const results = [];
+
+    for (const configRow of configs) {
+      if (signal.aborted) {
+        this.logger.log('Main scraping loop aborted before starting new site.');
+        break;
+      }
+
+      const sourceSite = configRow.source_site;
+      this.logger.log(`Starting scrape for ${sourceSite}`);
+      const result = await this.scrapeSingleSite(sourceSite, signal);
+      results.push(result);
+    }
+
+    this.abortController = null;
+    return { message: 'Scraping process finished', results };
+  }
+
+  private async scrapeSingleSite(
+    sourceSite: string,
+    signal: AbortSignal,
+  ): Promise<any> {
     const startTime = new Date().toISOString();
     const sessionLogs: any[] = [];
     const addLog = (level: string, message: any, trace?: any) => {
@@ -87,16 +138,13 @@ export class ScraperService {
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage', // <--- BU ÇOX VACİBDİR! (Docker-də RAM-ı qoruyur)
-          '--no-zygote', // RAM-ı rahatladır
+          '--disable-dev-shm-usage',
+          '--no-zygote',
         ],
       });
 
-      // totalScraped moved up
-
       const categories = config.categories || [];
 
-      // Helper for concurrency limits
       const concurrencyLimit = 2;
       let activeWorkers = 0;
       const queue: (() => void)[] = [];
@@ -117,6 +165,14 @@ export class ScraperService {
       };
 
       const processCategory = async (category: any) => {
+        if (signal.aborted) {
+          addLog(
+            'warn',
+            `[Worker] ${category.name} - Scraping aborted before opening page.`,
+          );
+          return 0;
+        }
+
         const page = await browser.newPage();
 
         // 1. Resource Interception (The "Blind Browser")
@@ -173,6 +229,15 @@ export class ScraperService {
         let categoryScraped = 0;
 
         while (hasMore) {
+          if (signal.aborted) {
+            addLog(
+              'log',
+              `[Worker] ${category.name} - Scraping aborted mid-way. Exiting loop.`,
+            );
+            hasMore = false;
+            break;
+          }
+
           try {
             addLog(
               'log',
@@ -403,7 +468,14 @@ export class ScraperService {
       );
 
       // 4. Final Sync
-      await this.syncDatabase(sourceSite);
+      if (signal.aborted) {
+        addLog(
+          'log',
+          'Scraping was aborted. Skipping final database sync to avoid partial data overwrite.',
+        );
+      } else {
+        await this.syncDatabase(sourceSite);
+      }
     } catch (err: any) {
       statusCode = 500;
       errorDump =
@@ -461,6 +533,7 @@ export class ScraperService {
     }
 
     return {
+      sourceSite,
       message: statusCode === 200 ? 'Scraping finished' : 'Scraping failed',
       total_items: typeof totalScraped !== 'undefined' ? totalScraped : 0,
     };

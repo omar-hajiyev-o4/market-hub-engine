@@ -13,4 +13,10 @@ export class ScraperController {
     await this.scraperService.websiteScrapingMain();
     return { message: 'Scraper engine started successfully' };
   }
+
+  @Post('abort')
+  @ApiOperation({ summary: 'Abort the currently running scraper' })
+  abortScraper() {
+    return this.scraperService.abortScraping();
+  }
 }

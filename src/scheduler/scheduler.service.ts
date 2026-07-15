@@ -33,8 +33,8 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
         this.isJobRunning = true;
         try {
-          // Modify the source site if you need to scrape multiple sites dynamically
-          await this.scraperService.websiteScrapingMain('irshad.az');
+          // Trigger the master loop that will iterate over all active sources
+          await this.scraperService.websiteScrapingMain();
           this.logger.log('Scheduled scraping job completed successfully.');
         } catch (error) {
           this.logger.error(
