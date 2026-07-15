@@ -97,7 +97,7 @@ export class ScraperService {
       const categories = config.categories || [];
 
       // Helper for concurrency limits
-      const concurrencyLimit = 3;
+      const concurrencyLimit = 2;
       let activeWorkers = 0;
       const queue: (() => void)[] = [];
       const limit = async <T>(fn: () => Promise<T>): Promise<T> => {

@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { MailerModule } from './mailer/mailer.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { MailerModule } from './mailer/mailer.module';
     DatabaseModule,
     ScraperModule,
     MailerModule,
+    SchedulerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

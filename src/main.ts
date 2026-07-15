@@ -10,7 +10,7 @@ async function bootstrap() {
     .setDescription('The Market Hub Engine API documentation')
     .setVersion('1.0')
     .build();
-  
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, documentFactory);
 

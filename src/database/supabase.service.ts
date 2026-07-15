@@ -9,10 +9,14 @@ export class SupabaseService {
 
   constructor(private configService: ConfigService) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    );
 
     if (!supabaseUrl || !supabaseKey) {
-      this.logger.warn('Supabase URL or Key is missing. Check your environment variables.');
+      this.logger.warn(
+        'Supabase URL or Key is missing. Check your environment variables.',
+      );
     } else {
       this.supabase = createClient(supabaseUrl, supabaseKey);
     }
@@ -20,7 +24,9 @@ export class SupabaseService {
 
   getClient(): SupabaseClient {
     if (!this.supabase) {
-      throw new Error('Supabase client is not initialized. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env file.');
+      throw new Error(
+        'Supabase client is not initialized. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env file.',
+      );
     }
     return this.supabase;
   }
