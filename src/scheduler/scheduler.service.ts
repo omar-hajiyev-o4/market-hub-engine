@@ -20,7 +20,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
     // Run exactly twice a day: at 15:00 and 21:00.
     this.cronTask = cron.schedule(
-      '0 17,21 * * *',
+      '30 17,21 * * *',
       async () => {
         this.logger.log('Cron triggered: Starting scheduled scraping job.');
 

@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-0 libgbm-dev libasound2 unzip \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
+# Və Docker-ə default vaxtı Bakı kimi təyin etmək üçün bu sətri əlavə et:
+ENV TZ="Asia/Baku"
 
 WORKDIR /app
 
