@@ -35,6 +35,9 @@ export class ScraperService {
       .select('source_site')
       .eq('is_active', true);
 
+    this.logger.warn('configs', configs);
+    this.logger.warn('configError', configError);
+
     if (configError || !configs || configs.length === 0) {
       this.logger.warn('No active configurations found.');
       this.abortController = null;
