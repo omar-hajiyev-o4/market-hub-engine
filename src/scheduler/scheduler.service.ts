@@ -7,6 +7,8 @@ import {
 import * as cron from 'node-cron';
 import { ScraperService } from '../scraper/scraper.service';
 
+const cronTime = process.env.CRON_TIME || '0 9,21 * * *';
+
 @Injectable()
 export class SchedulerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SchedulerService.name);
@@ -20,7 +22,7 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
     // Run exactly twice a day: at 15:00 and 21:00.
     this.cronTask = cron.schedule(
-      '30 17,21 * * *',
+      cronTime,
       async () => {
         this.logger.log('Cron triggered: Starting scheduled scraping job.');
 
