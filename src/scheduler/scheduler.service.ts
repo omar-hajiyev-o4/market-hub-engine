@@ -30,12 +30,9 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
     await this.checkAndReloadSchedule();
 
-    this.pollInterval = setInterval(
-      () => {
-        this.checkAndReloadSchedule();
-      },
-      5 * 60 * 1000,
-    );
+    this.pollInterval = setInterval(() => {
+      this.checkAndReloadSchedule();
+    }, 60 * 1000);
   }
 
   private async checkAndReloadSchedule() {
