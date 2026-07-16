@@ -32,7 +32,13 @@ export class SchedulerService implements OnModuleInit, OnModuleDestroy {
 
     this.pollInterval = setInterval(() => {
       this.checkAndReloadSchedule();
-    }, 60 * 1000);
+      this.logger.warn(
+        'Next refresh date: ' +
+          new Date(Date.now() + 60000).toLocaleString('en-US', {
+            timeZone: 'Asia/Baku',
+          }),
+      );
+    }, 60000);
   }
 
   private async checkAndReloadSchedule() {
